@@ -2,13 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import {DevSupport} from "@react-buddy/ide-toolbox";
-import {ComponentPreviews, useInitial} from "./dev";
+import {BrowserRouter} from "react-router-dom";
+import {Provider} from "react-redux";
+import {store} from "./redux/store";
 
 const root = document.getElementById('root');
 
 ReactDOM.createRoot(root).render(
-    <DevSupport ComponentPreviews={ComponentPreviews}
-                useInitialHook={useInitial}>
-        <App/>
-    </DevSupport>)
+            <Provider store={store}>
+                <BrowserRouter>
+                    <App/>
+                </BrowserRouter>
+            </Provider>
+);
