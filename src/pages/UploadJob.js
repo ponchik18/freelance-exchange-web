@@ -9,7 +9,6 @@ import {useSelector} from "react-redux";
 import {getAllSkills} from "../axios/SkillService";
 import {RotatingLines} from "react-loader-spinner";
 import {useKeycloak} from "@react-keycloak/web";
-import "../css/reset-tailwind-css.css";
 
 const UploadJob = () => {
     const {
@@ -23,14 +22,29 @@ const UploadJob = () => {
         mode: "onChange",
         defaultValues: {},
     });
+    const [errMsg, setErrMsg] = useState("");
+    const [jobSkills, setJobSkills] = useState([]);
+    const [allSkills, setAllSkills] = useState([]);
     const {keycloak} = useKeycloak();
-    const {user} = useSelector((state) => state.user);
+    const {user, token} = useSelector((state) => state.user);
     const [jobs, setJobs] = useState([]);
     const [selectedSkillValue, setSelectedSkillValue] = useState('1');
     const [isLoading, setIsLoading] = useState(false);
+    const [filteredSkills, setFilteredSkills] = useState()
+
+    const [selectedParent, setSelectedParent] = useState(null);  // Состояние для выбранной родительской категории
+
+    useEffect(() => {
+        setFilteredSkills(
+            allSkills?.filter(category => category.parentSkill.id === selectedParent)
+        )
+    }, [selectedParent]);
 
     const handleSelectChange = (event) => {
         setSelectedSkillValue(event.target.value);
+    };
+    const handleSelectParent = (parentId) => {
+        setSelectedParent(parentId);
     };
     useEffect(() => {
         const fetchUserJobs = async () => {
@@ -38,28 +52,22 @@ const UploadJob = () => {
             if (userId) {
                 const jobsData = await getAllJobsForCustomer(userId);
                 setJobs(jobsData.data);
-                const response  = await getAllSkills()
+                const response = await getAllSkills()
                 setAllSkills(response.data);
-                setSelectedSkillValue(response.data[0].id)
+                // setSelectedSkillValue(response.data[0].id)
             }
         };
         fetchUserJobs()
     }, [user]);
-
-    const [errMsg, setErrMsg] = useState("");
-    const [jobSkills, setJobSkills] = useState([]);
-    const [allSkills, setAllSkills] = useState([]);
     const onSubmit = async (data) => {
-        if (keycloak.authenticated) {
-            keycloak.updateToken(10).then(async () => {
                 setIsLoading(true)
                 if (jobSkills && jobSkills?.length !== 0) {
                     data.skills = jobSkills.map((skill) => skill.id);
                 }
                 try {
-                    const response = await uploadJob(data, keycloak?.token)
+                    const response = await uploadJob(data, token)
                     setIsLoading(false)
-                    window.location.href='/job-detail/'+response.data.id;
+                    window.location.href = '/job-detail/' + response.data.id;
                 } catch (error) {
                     const errResponse = error?.response;
                     if (errResponse) {
@@ -69,18 +77,16 @@ const UploadJob = () => {
                     }
                     setIsLoading(false)
                 }
-            });
-        }
     };
     const onSelectSkill = () => {
         if (selectedSkillValue) {
-            const selectedSkillIndex = allSkills.findIndex((skill) => skill.id == selectedSkillValue);
+            const selectedSkillIndex = filteredSkills[0].skills.findIndex((skill) => skill.id == selectedSkillValue);
             if (selectedSkillIndex !== -1) { // Check if skill is found
-                const selectedSkill = allSkills[selectedSkillIndex];
-                const updatedAllSkills = allSkills.filter((_, index) => index !== selectedSkillIndex); // Create a new array without the selected skill
-                setAllSkills(updatedAllSkills);
+                const selectedSkill = filteredSkills[0].skills[selectedSkillIndex];
+                // const updatedAllSkills = filteredSkills.filter((_, index) => index !== selectedSkillIndex); // Create a new array without the selected skill
+                // setAllSkills(updatedAllSkills);
                 setJobSkills([...jobSkills, selectedSkill]); // Add selected skill to jobSkills using spread operator to create a new array
-                setSelectedSkillValue(allSkills[0]?.id)
+                //setSelectedSkillValue(allSkills[0]?.id)
             }
         }
     };
@@ -91,7 +97,7 @@ const UploadJob = () => {
             const selectedSkill = jobSkills[selectedSkillIndex];
             const updatedJobSkills = jobSkills.filter((_, index) => index !== selectedSkillIndex); // Create a new array without the selected skill
             setJobSkills(updatedJobSkills);
-            setAllSkills([...allSkills, selectedSkill]); // Add selected skill to allSkills using spread operator to create a new array
+            //setAllSkills([...allSkills, selectedSkill]); // Add selected skill to allSkills using spread operator to create a new array
         }
     };
 
@@ -105,6 +111,7 @@ const UploadJob = () => {
                     <form
                         className='w-full mt-2 flex flex-col gap-8'
                         onSubmit={handleSubmit(onSubmit)}
+
                     >
                         <TextInput
                             name='title'
@@ -137,26 +144,50 @@ const UploadJob = () => {
                             </div>
                         </div>
                         {allSkills?.length !== 0 && (
-                            <div className="flex flex-col">
-                                <select
-                                    value={selectedSkillValue}
-                                    onChange={handleSelectChange}
-                                    className="block w-full bg-white border border-gray-300 rounded-md py-2 px-4 mb-1">
+                            <>
+                                <div className="mb-4">
+                                    <h3 className="font-semibold text-lg">Выберите категорию:</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {allSkills?.map((category) => (
+                                            <span
+                                                key={category.parentSkill.id}
+                                                onClick={() => handleSelectParent(category.parentSkill.id)}
+                                                className={`${
+                                                    selectedParent === category.parentSkill.id
+                                                        ? 'bg-blue-300'
+                                                        : 'bg-[#1d4fd826]'
+                                                } text-[#1d4ed8] rounded-full py-1 px-2 text-sm md:text-base hover:underline cursor-pointer`}
+                                            >
+                                        {category.parentSkill.name}
+                                    </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <select
+                                        value={selectedSkillValue}
+                                        onChange={handleSelectChange}
+                                        className="block w-full bg-white border border-gray-300 rounded-md py-2 px-4 mb-1">
 
-                                    {allSkills.map((skill) => (
-                                        <option key={skill.id} value={skill.id}>{skill.name}</option>
-                                    ))}
+                                        {filteredSkills?.flatMap(category =>
+                                            category.skills
+                                                .filter((skill) => !jobSkills.includes(skill))
+                                                .map((skill) => (
+                                                    <option key={skill.id} value={skill.id}>{skill.name}</option>
+                                                ))
+                                        )}
 
-                                </select>
-                                <button type="button"
-                                        onClick={onSelectSkill}
-                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                    Добавить
-                                </button>
-                            </div>
+                                    </select>
+                                    <button type="button"
+                                            onClick={onSelectSkill}
+                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        Добавить
+                                    </button>
+                                </div>
+                            </>
                         )}
                         <Editor
-                            apiKey="gol8ql8ovvqu6xklzjig703pipmwpo7tcfm6yy07ve0q97vq"
+                            apiKey="5148pjlmnfcneinm2w3kc57up57dvqixvv6x2ufa55295y8k"
                             onEditorChange={(description) => {
                                 register("description", {value: description});
                                 setValue("description", description);

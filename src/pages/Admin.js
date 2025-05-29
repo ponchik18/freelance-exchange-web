@@ -3,6 +3,7 @@ import Dashboard from "../components/admin/Dashboard";
 import RevenueChart from "../components/admin/RevenueChart";
 import TaskStatusPieChart from "../components/admin/TaskStatusPieChart";
 import SkillsTable from "../components/admin/SkillsTable";
+import {SkillsOverview} from "../components/analytics";
 
 const Admin = () => {
     return (
@@ -13,9 +14,9 @@ const Admin = () => {
                     <Dashboard/>
                 </div>
             </div>
-            <div className="flex flex-col mt-8 md:flex-row gap-6">
-                <SkillsTable/>
-            </div>
+            {/*<div className="flex flex-col mt-8 md:flex-row gap-6">*/}
+            {/*    <SkillsTable/>*/}
+            {/*</div>*/}
             <div className="flex flex-col mt-8 md:flex-row gap-6">
                 <div className="container mx-auto">
                     <RevenueChart/>
@@ -23,6 +24,9 @@ const Admin = () => {
                 <div className="container mx-auto">
                     <TaskStatusPieChart/>
                 </div>
+            </div>
+            <div className=" w-full flex-col md:flex-row gap-6">
+                <SkillsOverview/>
             </div>
         </div>
     );

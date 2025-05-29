@@ -45,17 +45,12 @@ const FindClients = () => {
                 setSearchQuery={setSearchQuery}
             />
             <div className={'container mx-auto flex gap-6 2xl:gap-10 md:px-5 py-0 md:py-6 bg-[#f7fdfd'}>
-                <div className='w-full md:w-5/6 px-5 md:px-0'>
+                <div className='w-full md:w-6/6 px-5 md:px-0'>
                     <div className='flex items-center justify-between mb-4'>
                         <p className='text-sm md:text-base'>
-                            Всего: <span className='font-semibold'>{recordsCount}</span> заказов найдено
+                            Всего: <span className='font-semibold'>{recordsCount}</span> найдено
                         </p>
 
-                        <div className='flex flex-col md:flex-row gap-0 md:gap-2 md:items-center'>
-                            <p className='text-sm md:text-base'>Сортировать:</p>
-
-                            {/*<ListBox sort={sort} setSort={setSort} />*/}
-                        </div>
                     </div>
 
                 <div className='w-full flex flex-col gap-6'>

@@ -4,7 +4,7 @@ import 'chart.js/auto';
 
 const RevenueChart = () => {
     const data = {
-        labels: ['Декабрь', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май'],
+        labels: ['Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
         datasets: [
             {
                 label: 'Прибыль',

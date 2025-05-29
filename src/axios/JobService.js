@@ -29,8 +29,22 @@ export async function getAllJobs(params={}, page = 0, size = 10) {
     });
 }
 
+export async function getAllJobsForFreelancerSmartSearch(freelancerId, params={}, page = 0, size = 10) {
+    params.pageNumber = page;
+    params.elementsPerPage = size;
+
+    return await axios.get(`${API_URL}/smart-search/${freelancerId}`, {
+        params: params,
+        paramsSerializer: paramsSerializer
+    });
+}
+
 export async function getAllJobsForCustomer(userId) {
     return await axios.get(`${API_URL}/customer/${userId}`)
+}
+
+export async function getAllJobsForFreelancer(userId) {
+    return await axios.get(`${API_URL}/freelancer/${userId}`)
 }
 
 export async function uploadJob(data, token) {
@@ -53,10 +67,15 @@ export async function startJob(jobId, token) {
     return await axios.put(`${API_URL}/start/${jobId}`, {}, {headers})
 }
 
-export async function finishJob(jobId,data, token) {
+export async function finishJob(jobId, data, token) {
     const headers = {
         Accept: "application/json",
+        'Content-Type': 'multipart/form-data',
         Authorization: "Bearer " + token
     };
     return await axios.put(`${API_URL}/finish/${jobId}`, data, {headers})
+}
+
+export async function generateSkillsForAnalytics() {
+    return await axios.get(`${API_URL}/analytics/skills`)
 }

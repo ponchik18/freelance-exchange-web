@@ -3,7 +3,7 @@ import React, {Fragment, useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
 import {useSelector} from "react-redux";
 import {AiOutlineMail} from "react-icons/ai";
-import {CustomButton, TextInput, UserForm, SkillList, SkillForm, CommentList} from "../components";
+import {CommentList, CustomButton, SkillForm, SkillList, TextInput, UserForm} from "../components";
 import {useParams} from "react-router-dom";
 import {getFreelancerById, updateFreelancer,} from "../axios/FreelancerService";
 import {Editor} from "@tinymce/tinymce-react";
@@ -18,12 +18,10 @@ import DOMPurify from "dompurify";
 import "../css/reset-tailwind-css.css";
 import {
     addSkillToFreelancer,
-    getAllSkillsNotForFreelancer,
+    deleteSkillToFreelancer,
     getAllSkillsForFreelancer,
-    deleteSkillToFreelancer
+    getAllSkillsNotForFreelancer
 } from "../axios/SkillService";
-import {getCustomerById} from "../axios/CustomerService";
-import {getAllJobsForCustomer} from "../axios/JobService";
 import {getAllRatingByUserId} from "../axios/RatingService";
 
 
@@ -45,7 +43,7 @@ const ResumeForm = ({open, setOpen, resume, onUserResumeSubmit}) => {
     return (
         <>
             <Transition appear show={open ?? false} as={Fragment}>
-                <Dialog as="div" className="relative z-10" onClose={closeModal}>
+                <Dialog as="div" className="w-[70%] relative z-10 " onClose={closeModal}>
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -75,7 +73,7 @@ const ResumeForm = ({open, setOpen, resume, onUserResumeSubmit}) => {
                                         as="h3"
                                         className="text-lg font-semibold leading-6 text-gray-900"
                                     >
-                                        Редактировать резюме
+                                        Резюме
                                     </Dialog.Title>
                                     <form
                                         className="w-full mt-2 flex flex-col gap-5"
@@ -94,7 +92,7 @@ const ResumeForm = ({open, setOpen, resume, onUserResumeSubmit}) => {
                                             }
                                         />
                                         <Editor
-                                            apiKey="gol8ql8ovvqu6xklzjig703pipmwpo7tcfm6yy07ve0q97vq"
+                                            apiKey="5148pjlmnfcneinm2w3kc57up57dvqixvv6x2ufa55295y8k"
                                             onEditorChange={(resumeContent) => {
                                                 register("resumeContent", {value: resumeContent});
                                                 setValue("resumeContent", resumeContent);
@@ -149,7 +147,7 @@ const ResumeForm = ({open, setOpen, resume, onUserResumeSubmit}) => {
 };
 
 const UserProfile = () => {
-    const {user} = useSelector((state) => state.user);
+    const {user, token} = useSelector((state) => state.user);
     const [userDataOpen, setUserDataOpen] = useState(false);
     const [resumeOpen, setResumeOpen] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
@@ -162,56 +160,45 @@ const UserProfile = () => {
 
 
     const onUserDataSubmit = async (data) => {
-        if (keycloak.authenticated) {
-            keycloak.updateToken(10).then(async () => {
-                try {
-                    await updateFreelancer(data, user.userId, keycloak?.token);
-                    toast.success("Изменения сохранены!");
-                } catch (error) {
-                    if (error?.response) {
-                        toast.error(`Ошибка! ${error?.response?.data?.message}`);
-                    } else {
-                        toast.error(`Ошибка обновления данных!`);
-                    }
-                }
-                const userData = await getUserData(keycloak?.token);
-                if (userData.data) {
-                    dispatch(LoginRedux(userData.data));
-                }
-            });
+        try {
+            await updateFreelancer(data, user.userId, token);
+            toast.success("Изменения сохранены!");
+        } catch (error) {
+            if (error?.response) {
+                toast.error(`Ошибка! ${error?.response?.data?.message}`);
+            } else {
+                toast.error(`Ошибка обновления данных!`);
+            }
+        }
+        const userData = await getUserData(token);
+        if (userData.data) {
+            dispatch(LoginRedux(userData.data, token));
         }
     };
     const onAddSkillToFreelancer = async (data) => {
-        if (keycloak.authenticated) {
-            keycloak.updateToken(10).then(async () => {
-                const userId = user.userId;
-                console.log(keycloak?.token)
-                const response = await addSkillToFreelancer(userId, data.skillId, keycloak?.token);
-                if (response.status === 201) {
+        const userId = user.userId;
+        console.log(keycloak?.token)
+        const response = await addSkillToFreelancer(userId, data.skillId, token);
+        if (response.status === 201) {
 
-                    setAllSkills((await getAllSkillsNotForFreelancer(user.userId)).data)
-                    setUserSkills((await getAllSkillsForFreelancer(user.userId, keycloak?.token)).data)
-                } else {
-                    toast.error("Ошибка!");
-                }
-            });
+            setAllSkills((await getAllSkillsNotForFreelancer(user.userId)).data)
+            setUserSkills((await getAllSkillsForFreelancer(user.userId, token)).data)
+        } else {
+            toast.error("Ошибка!");
         }
     }
 
     const onUserResumeSubmit = async (data) => {
-        if (keycloak.authenticated) {
-            keycloak.updateToken(10).then(async () => {
-                data.freelancerId = userInfo.userId;
-                const response = await createResume(data, keycloak?.token);
-                if (response.status === 201) {
-                    toast.success("Операция проведена успешно!");
-                } else {
-                    toast.error("Ошибка!");
-                }
-            });
+        data.freelancerId = userInfo.userId;
+        const response = await createResume(data, token);
+        await fetchUserData();
+        if (response.status === 201) {
+            toast.success("Операция проведена успешно!");
+        } else {
+            toast.error("Ошибка!");
         }
     };
-    const onDeleteSkill=async(skillId) => {
+    const onDeleteSkill = async (skillId) => {
         if (keycloak.authenticated) {
             keycloak.updateToken(10).then(async () => {
                 await deleteSkillToFreelancer(user.userId, skillId, keycloak?.token)
@@ -222,21 +209,30 @@ const UserProfile = () => {
         }
     }
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            setIsLoading(true);
-            const userId = params?.id || keycloak?.tokenParsed?.sub;
-            if (userId) {
-                    const response = await getFreelancerById(userId);
-                    setUserInfo(response.data);
-                    setAllSkills((await getAllSkillsNotForFreelancer(userId)).data)
-                    setUserSkills((await getAllSkillsForFreelancer(userId)).data)
-                    setComments((await getAllRatingByUserId(userId)).data)
+    const fetchUserData = async () => {
+        try {
+            if (keycloak.authenticated) {
+                keycloak.updateToken(10).then(async () => {
+                    setIsLoading(true);
+                    const userId = params?.id || keycloak?.tokenParsed?.sub;
+                    if (userId) {
+                        const response = await getFreelancerById(userId);
+                        setUserInfo(response.data);
+                        setAllSkills((await getAllSkillsNotForFreelancer(userId)).data)
+                        setUserSkills((await getAllSkillsForFreelancer(userId)).data)
+                        setComments((await getAllRatingByUserId(userId)).data)
+                    }
+                    setIsLoading(false);
+                });
             }
-            setIsLoading(false);
-        };
+        } catch (error) {
+
+        }
+    };
+
+    useEffect(() => {
         fetchUserData();
-    }, []);
+    }, [keycloak.authenticated]);
 
     function getResumeContent(content) {
         return {
@@ -263,12 +259,12 @@ const UserProfile = () => {
                                     className="w-full h-48 object-contain rounded-lg"
                                 />
                                 {(userInfo && user?.userId === userInfo?.userId) && (
-                                <button
-                                    className="w-full md:w-64 bg-blue-600 text-white mt-4 py-2 rounded"
-                                    onClick={() => setUserDataOpen(true)}
-                                >
-                                    Редактирование профиля
-                                </button>
+                                    <button
+                                        className="w-full md:w-64 bg-blue-600 text-white mt-4 py-2 rounded"
+                                        onClick={() => setUserDataOpen(true)}
+                                    >
+                                        Редактировать профиль
+                                    </button>
                                 )}
                                 <h1 className="text-4xl font-semibold text-slate-600">
                                     {userInfo?.firstName + " " + userInfo?.lastName}
@@ -291,7 +287,7 @@ const UserProfile = () => {
                                         </div>
                                     </div>
                                 </div>
-                            ): (
+                            ) : (
                                 <div className="container mx-auto mt-5">
                                     <h1 className="text-center text-2xl font-bold mb-5">Навыки</h1>
                                     <div className="flex justify-center">
@@ -303,11 +299,12 @@ const UserProfile = () => {
                             )}
                             {(userInfo && user?.userId === userInfo?.userId) && (
                                 <>
-                            {allSkills?.length !== 0 && (
-                                <div className="flex flex-col">
-                                    <SkillForm onSubmit={onAddSkillToFreelancer} skills={allSkills}/>
-                                </div>
-                            )}
+                                    {allSkills?.length !== 0 && (
+                                        <div className="flex flex-col">
+                                            <SkillForm onSubmit={onAddSkillToFreelancer} skills={allSkills}
+                                                       selectedSkills={userSkills}/>
+                                        </div>
+                                    )}
                                 </>
                             )}
 
@@ -336,22 +333,22 @@ const UserProfile = () => {
                                         )}
                                         <span className="text-base text-justify leading-7">
                         {(userInfo && user?.userId === userInfo?.userId) && (
-                      <button
-                          className="w-full md:w-64 bg-blue-600 text-white mt-4 py-2 rounded"
-                          onClick={() => setResumeOpen(true)}
-                      >
-                        {(userInfo?.resumes && userInfo?.resumes?.lenght !== 0)
-                            ? "Редактировать резюме"
-                            : "Создать резюме"}
+                            <button
+                                className="w-full md:w-64 bg-blue-600 text-white mt-4 py-2 rounded"
+                                onClick={() => setResumeOpen(true)}
+                            >
+                                {(userInfo?.resumes?.length !== 0)
+                                    ? "Редактировать резюме"
+                                    : "Создать резюме"}
 
-                      </button>
+                            </button>
                         )}
                     </span>
                                     </div>
                                 </div>
                             </div>
                             <div className="w-full py-10">
-                               Jo
+                                <CommentList comments={comments?.content}/>
                             </div>
                         </div>
 

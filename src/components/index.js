@@ -17,6 +17,7 @@ import ProposalForm from "./form/ProposalForm";
 import FreelancerCard from "./card/FreelancerCard";
 import RatingForm from "./form/RatingForm";
 import CommentList from "./CommentList";
+import PayPalButton from "./PayPalButton";
 
 
 export {
@@ -38,5 +39,6 @@ export {
     ProposalForm,
     FreelancerCard,
     RatingForm,
-    CommentList
+    CommentList,
+    PayPalButton
 };

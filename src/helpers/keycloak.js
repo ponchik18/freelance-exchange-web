@@ -1,9 +1,9 @@
 import Keycloak from "keycloak-js";
 
-const keycloak = new Keycloak({
+const keycloakSetting = new Keycloak({
   url: "http://localhost:8080/auth",
   realm: "freelance-exchange",
   clientId: "freelance-web",
 });
 
-export default keycloak;
+export default keycloakSetting;

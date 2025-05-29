@@ -22,6 +22,14 @@ export async function getAllSkillsForFreelancer(freelancerId) {
     return await axios.get(`${API_URL}/freelancer/${freelancerId}`)
 }
 
+export async function getAllSkillsForFreelancerForSmartSearch(freelancerId, token) {
+    const headers = {
+        Accept: "application/json",
+        Authorization: "Bearer " + token
+    };
+    return await axios.get(`${API_URL}/freelancer/for-smart-search/${freelancerId}`,{headers})
+}
+
 export async function addSkillToFreelancer(userId, skillId, token) {
     const headers = {
         Accept: "application/json",

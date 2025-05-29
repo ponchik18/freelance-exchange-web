@@ -6,8 +6,8 @@ import {SignUp} from "../components";
 
 const Auth = () => {
     const {user} = useSelector(state => state.user)
-    const [open, setOpen] = useState(true)
     const location = useLocation()
+    const [isOpen, setIsOpen] = useState(true);
 
     let from = location?.state?.from?.pathname || "/";
     if(user?.token) {
@@ -19,7 +19,7 @@ const Auth = () => {
             alt={Office}
             className={"object-contain mx-auto"}
         />
-        <SignUp open={open} setOpen={setOpen}/>
+        <SignUp open={isOpen} setOpen={setIsOpen}/>
     </div>;
 }
 

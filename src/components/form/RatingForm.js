@@ -5,7 +5,7 @@ import {createProposal} from "../../axios/ProposalService";
 import {toast} from "react-toastify";
 import {saveRating} from "../../axios/RatingService";
 
-const RatingForm = ( {userId}) => {
+const RatingForm = ( {userId, job, fetchRating}) => {
     const [comment, setComment] = useState('');
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
@@ -28,11 +28,13 @@ const RatingForm = ( {userId}) => {
                     rating: Number(rating),
                     toUser: userId,
                     fromUser: keycloak?.tokenParsed?.sub,
-                    review: comment
+                    review: comment,
+                    jobId: job.id
 
                 }, keycloak?.token);
                 if (response.status === 201) {
                     toast.success("Операция проведена успешно!");
+                    fetchRating(job);
                 } else {
                     toast.error("Ошибка!");
                 }

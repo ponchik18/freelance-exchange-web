@@ -16,6 +16,59 @@ export const footerLinks = [
     }
 ]
 
+export const jobStatuses = {
+    CREATED: {
+        name: "Испонитель не выбран",
+        color: "bg-blue-500"
+    },
+    WORKED: {
+        name: "В работе",
+        color: "bg-green-500"
+    },
+    FINISH: {
+        name: "Ожидают оплаты",
+        color: "bg-yellow-500"
+    },
+    PAID: {
+        name: "Завершено",
+        color: "bg-purple-500"
+    },
+    CANCELLED: {
+        name: "Отменено",
+        color: "bg-gray-500"
+    },
+}
+
+export const transactionStatuses = {
+    TOP_UP: {
+        name: "Пополнение",
+        color: "bg-green-500",
+        textColor: "text-green-500",
+        sign: "+"
+    },
+    WITHDRAW: {
+        name: "Вывод",
+        color: "bg-red-500",
+        textColor: "text-red-500",
+        sign: "-"
+    },
+};
+
+export const transactionCustomerStatuses = {
+    FINISHED: {
+        name: "Успешная",
+        color: "bg-green-500",
+    },
+    REJECTED: {
+        name: "Отклонённая",
+        color: "bg-red-500",
+    },
+    CREATED: {
+        name: "В процессе",
+        color: "bg-gray-500",
+    },
+};
+
 export const jobTypes = ["Full-Time", "Part-Time", "ContracT", "Intern"];
 
 export const experience = [
